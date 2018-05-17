@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+
+    <title>一分也是爱</title>
+    <link rel="stylesheet" href="lib/bootstrap-4.0.0-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+<div class="contenner">
+    <div class="noExtension" id="noExtension">
+        注意: 请通过链接安装 <a target="_blank" href="https://github.com/ChengOrangeJu/WebExtensionWallet">WebExtensionWallet</a>
+        , 然后才能使用本程序
+    </div>
+
+    <div id="content" class="content">
+        <h1><span class="tips">程序说明</span></h1>
+        <div class="info">
+            <div id="remain" class="remain">智能合约地址:<strong class="address"></strong> <br>剩余的NAS数量:
+                <strong class="num"></strong></div>
+        </div>
+        <div class="search">
+            <div class="p-num"><span></span><br>已领取</div>
+            <div id="start" class="start">领取今日NAS</div>
+            <div id="donor" class="start btn-donate">我要捐赠</div>
+        </div>
+
+        <!--游戏结果-->
+        <!--<div id="result"></div>-->
+
+        <div class="adv">
+            <div class="title">感谢金主爸爸们的鼎力支持</div>
+            <div class="scroll">
+                <table class="moneybb">
+                    <thead>
+                    <tr>
+                        <th>昵称</th>
+                        <th style="width: 100px;">数量</th>
+                        <th>寄语</th>
+                        <th style="width: 180px;">最后捐赠日期</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!--<tr>-->
+                    <!--<td>龙行天下</td>-->
+                    <!--<td>2</td>-->
+                    <!--<td>越来越好</td>-->
+                    <!--<td>2018-05-04</td>-->
+                    <!--</tr>-->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="popup pop-donor">
+    <h2>我要捐赠 <span class="close">&times;</span></h2>
+    <label style="margin-top: 60px;"><span>昵称:</span> <input type="text" id="nickname" class="form-control"></label>
+    <label><span>数量:</span> <input type="text" id="donorNum" class="form-control"></label>
+    <label><span>祝福语:</span> <input type="text" id="words" class="form-control"></label>
+
+    <br>
+
+    <button id="sendButton" class="btn btn-primary" style="margin-right: 10px;">确定</button>
+    <button id="cancelBtn" class="btn btn-default">取消</button>
+</div>
+
+<div class="popup">
+    <h2>程序说明 <span class="close">&times;</span></h2>
+    <ol style="text-align: left;font-size: 22px;line-height: 60px;">
+        <li>此程序主要是将开发者和投资人(广告商联系起来),让非程序也能参与进来</li>
+        <li>每个地址每天可以领取一次鼓励金，不过需要消耗少量gas才能领到</li>
+        <li>创意来源是发布到主网需要gas费用</li>
+        <li>程序需要用户安装web-wallet钱包才能参与，可以近似认为用户就是开发者了</li>
+    </ol>
+</div>
+
+<div class="modal fade">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">提示</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="right: 12px;"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                您已经参加过活动了，请明日再来!
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" style="margin:0 auto">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src=lib/jquery-3.3.1.min.js></script>
+<script src=lib/nebPay.js></script>
+<script src=lib/bootstrap-4.0.0-dist/js/bootstrap.min.js></script>
+<script>
+    var NebPay = require("nebpay");     //https://github.com/nebulasio/nebPay
+    var nebPay = new NebPay();
+
+    //合约地址
+    var contractAddress = "n1gjJyKc6v6CsrQAQNx6Q1WiddBJQk58Bve";
+    // var baseurl = 'http://localhost:8685';
+    var baseurl = 'https://mainnet.nebulas.io';
+
+
+    //to check if the extension is installed
+    //if the extension is installed, var "webExtensionWallet" will be injected in to web page
+    if (typeof(webExtensionWallet) === "undefined") {
+        //alert ("Extension wallet is not installed, please install it first.")
+        $("#noExtension").show();
+        $("button").attr("disabled", "disabled");
+    } else {
+        $("#noExtension").hide();
+    }
+
+    function init() {
+        $('.tips').click(function () {
+            $('.popup').show();
+        });
+
+        $('.close, #cancelBtn').click(function () {
+            $('.popup').hide();
+        });
+
+        $('#donor').click(function () {
+            $('.pop-donor').show();
+        });
+
+        getAllDevs();
+
+
+        getRemain();
+
+        getDonors(10);
+
+    }
+
+    init();
+
+    function getRemain() {
+        var url = baseurl + '/v1/user/accountstate';
+        var data = {
+            "address": contractAddress
+        };
+        data = JSON.stringify(data);
+
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: data,
+            dataType: 'json'
+        }).then(function (data) {
+            if (data && data.result) {
+                $('#remain .address').html(contractAddress);
+                $('#remain .num').html(data.result.balance / 1e18);
+            }
+        });
+
+    }
+
+
+    //    获取最新的捐赠者列表
+    function getDonors(number) {
+        var to = contractAddress;
+        var value = "0";
+        var callFunction = "getDonors";
+        var callArgs = "[\"" + number + "\"]"; //in the form of ["args"]
+
+        nebPay.simulateCall(to, value, callFunction, callArgs, {    //使用nebpay的simulateCall接口去执行get查询, 模拟执行.不发送交易,不上链
+            callback: cbGetDonors      //指定回调函数
+        });
+    }
+
+    function cbGetDonors(resp) {
+        var result = resp.result ? JSON.parse(resp.result) : [];
+        var str = '', d1;
+        result.reverse().forEach(function (value) {
+            d1 = new Date(value.time * 1000);
+            str += '<tr><td>' + value.nickname + '</td><td>' + value.number + '</td><td>' + value.words + '</td><td>' + d1.format('yyyy-MM-dd hh:mm') + '</td></tr>';
+        });
+
+        $(".moneybb tbody").html(str);
+    }
+
+    $('#start').click(function () {
+        var to = contractAddress;
+        var value = "0";
+        var callFunction = "get";
+        var callArgs = "";
+
+        nebPay.simulateCall(to, value, callFunction, callArgs, {    //使用nebpay的simulateCall接口去执行get查询, 模拟执行.不发送交易,不上链
+            callback: cbGetToken      //指定回调函数
+        });
+
+    });
+
+    function cbGetToken(resp) {
+        console.log(111, resp)
+        if (resp.result === 'Error: transfer failed.') {
+            alert('发生错误，可能是智能合约余额不足');
+            return;
+        }
+        var result = JSON.parse(resp.result);
+        var to = contractAddress;
+        var value = "0";
+        var callFunction = "get";
+        var callArgs = "";
+
+        if (result == 2) {
+            nebPay.call(to, value, callFunction, callArgs, {
+                callback: cbGetTokenReal      //指定回调函数
+            });
+
+        } else {
+            // alert('您已经参加过活动了，请明日再来！')
+
+            $('.modal').modal('show');
+        }
+    }
+
+    function cbGetTokenReal(resp) {
+        hashResult(resp.txhash).then(function () {
+            getRemain();
+            getAllDevs();
+        }, function () {
+            alert('获取Token失败');
+        });
+    }
+
+    //    点击捐赠按钮
+    $('#sendButton').click(function () {
+        var to = contractAddress;
+        var value = $('#donorNum').val();
+        var nickname = $('#nickname').val();
+        var words = $('#words').val();
+        var callFunction = "recharge";
+        var callArgs = "[\"" + nickname + "\", \"" + words + "\"]";
+
+        $('.popup').hide();
+        nebPay.call(to, value, callFunction, callArgs, {    //使用nebpay的simulateCall接口去执行get查询, 模拟执行.不发送交易,不上链
+            callback: cbSendDonors      //指定回调函数
+        });
+    });
+
+    function cbSendDonors(resp) {
+
+        console.log(222, resp);
+
+        hashResult(resp.txhash).then(function () {
+            getRemain();
+            getDonors(10);
+        }, function () {
+            alert('Token交易失败');
+        });
+    }
+
+    function hashResult(hash) {
+        var url = baseurl + '/v1/user/getTransactionReceipt';
+        var data = {
+            "hash": hash
+        };
+        data = JSON.stringify(data);
+
+        return new Promise(function (resolve, reject) {
+            window.t1 = setInterval(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: data,
+                    dataType: 'json'
+                }).then(function (data) {
+                    console.log(22, data)
+                    if (data && data.result) {
+                        if (data.result.status === 1) {
+                            // 成功
+                            resolve();
+                            clearInterval(window.t1);
+                        } else if (data.result.status === 0) {
+                            // 失败
+                            reject();
+                            clearInterval(window.t1);
+                        }
+                    }
+                }).catch(function (err) {
+                    reject(err);
+                });
+            }, 2000);
+        });
+
+    }
+
+    function getAllDevs() {
+        var to = contractAddress;
+        var value = "0";
+        var callFunction = "getAllDevs";
+        var callArgs = "";
+
+        nebPay.simulateCall(to, value, callFunction, callArgs, {    //使用nebpay的simulateCall接口去执行get查询, 模拟执行.不发送交易,不上链
+            callback: cbGetAllDevs      //指定回调函数
+        });
+
+    }
+
+    function cbGetAllDevs(resp) {
+        var result = resp.result ? JSON.parse(resp.result) : [];
+        $('.p-num span').html(result.length + '人');
+    }
+
+
+    //    日期格式化
+    Date.prototype.format = function (format) {
+        var o = {
+            "M+": this.getMonth() + 1, //month
+            "d+": this.getDate(),    //day
+            "h+": this.getHours(),   //hour
+            "m+": this.getMinutes(), //minute
+            "s+": this.getSeconds(), //second
+            "q+": Math.floor((this.getMonth() + 3) / 3),  //quarter
+            "S": this.getMilliseconds() //millisecond
+        }
+        if (/(y+)/.test(format)) format = format.replace(RegExp.$1,
+            (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o) if (new RegExp("(" + k + ")").test(format))
+            format = format.replace(RegExp.$1,
+                RegExp.$1.length == 1 ? o[k] :
+                    ("00" + o[k]).substr(("" + o[k]).length));
+        return format;
+    }
+
+
+</script>
+</body>
+
+</html>

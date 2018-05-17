@@ -1,0 +1,153 @@
+body {
+    text-align: center;
+    background: url(img/bg1.jpg) no-repeat;
+    background-size: 100% 100%;
+    background-attachment: fixed;
+    background-position: center bottom;
+}
+
+.content{
+    width: 1200px;
+    margin: 50px auto;
+    background: url(img/bg.png) no-repeat;
+}
+
+.popup {
+    display: none;
+    position: absolute;
+    width: 800px;
+    height: 400px;
+    left: 50%;
+    margin-left: -400px;
+    top: 50%;
+    margin-top: -200px;
+    background: #fff;
+    border: 1px solid;
+    border-radius: 10px;
+}
+
+.popup h2{
+    margin: 20px;
+}
+
+.tips{
+    float: right;
+    font-size: 12px;
+    color: #ffffff;
+    margin: 30px 37px 0 0;
+}
+
+.info{
+    clear: both;
+    float: right;
+    margin: 25px 34px 0;
+    color: #ffffff;
+    text-align: left;
+}
+
+.search{
+    float: right;
+    clear: both;
+    margin: 100px 69px 55px 0;
+    font-size: 22px;
+}
+.p-num{
+    float: left;
+    margin-right: 40px;
+}
+.p-num span{
+    color: #ea7795;
+}
+.start{
+    float: left;
+    width: 250px;
+    height: 65px;
+    margin: 0 20px;
+    text-align: center;
+    line-height: 65px;
+    border-radius: 30px;
+    color: #fff;
+    background-color: #e8913a;
+}
+
+.btn-donate{
+    background-color: #ea7795;
+}
+
+.adv {
+    clear: both;
+    padding: 30px 0;
+    width: 900px;
+    margin: 0 auto;
+}
+
+.adv .title {
+    font-size: 26px;
+    color: #fc6e48;
+}
+
+.scroll{
+    height: 255px;
+    overflow-y: scroll;
+    width: 1060px;
+    margin-left: -88px;
+}
+
+.close {
+    float: right;
+    top: -5px;
+    position: relative;
+    right: -6px;
+    border-radius: 50%;
+    border: 1px solid #333;
+    width: 30px;
+    height: 30px;
+    line-height: 24px;
+    text-align: center;
+}
+
+.moneybb {
+    width: 1000px;
+    margin: 30px 0 0 0;
+    line-height: 40px;
+    font-size: 16px;
+    text-align: left;
+}
+
+.moneybb td{
+    max-width: 400px;
+    line-height: 23px;
+    height: 50px;
+}
+
+.pop-donor {
+    box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
+}
+
+.pop-donor label {
+    display: block;
+    margin-bottom: 15px;
+}
+
+.pop-donor label span {
+    display: inline-block;
+    width: 100px;
+    text-align: right;
+    margin-right: 30px;
+    margin-left: -75px;
+}
+
+.form-control {
+    display: inline-block;
+    width: 60%;
+}
+
+.noExtension {
+    font-size: 33px;
+    color: #f00;
+    background-color: #0f0;
+}
+
+button:disabled {
+    background-color: #ccc;
+}
